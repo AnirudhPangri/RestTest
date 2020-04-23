@@ -17,11 +17,11 @@ Please enter the macAddress:
 Output: Company name and details.
 
 example:
-####################################################################
+
 Company Details:
-Cumulus Networks, Inc
-650 Castro Street, suite 120-245 Mountain View CA 94041 US
-####################################################################
+<Company Name>
+<Address>
+
 
 Though only company details are shown as output, All the details returned by the API are stored as a json file for future use.
 The program also generates a log file, Log levels for the same can be set easily.
