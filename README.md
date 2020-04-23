@@ -27,6 +27,7 @@ Though only company details are shown as output, All the details returned by the
 The program also generates a log file, Log levels for the same can be set easily.
 
 Also, this python app can be dockerized, and can be run as an independent container.
+Dockerfile is designed with minimal requirement to get the app working very quickly.
 Steps to create and run the docker container:
 (Assuming Docker is already installed and running on the machine)
 
