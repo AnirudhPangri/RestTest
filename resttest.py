@@ -1,12 +1,52 @@
-import http.client
 import ssl
 import json
+import socket
 import config
 import logging
 import re
+import sys
 
-httpClient = None
 apiKey = config.apiKey
+port = 443  # default port for HTTPS connection.
+hostname = config.hostname
+
+
+class APITest:
+    def execute_API_Call(self):
+        logging.debug("Inside execute_API_Call method")
+        try:
+            logging.debug("Inside the first try block")
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s = ssl.wrap_socket(s)
+            logging.info("Socket successfully created")
+        except socket.error as err:
+            logging.error("socket creation failed with error: " + str(err))
+
+        try:
+            logging.debug("Inside the second try block")
+            host_ip = socket.gethostbyname(hostname)
+        except socket.gaierror:
+            print("Error while resolving the host.")
+            sys.exit()
+
+        s.connect((host_ip, port))
+        logging.info("The socket has successfully connected to macaddress.io on port 443")
+
+        request = "GET /v1?apiKey={}&output=json&search={} HTTP/1.1\r\nHost: {}\r\n\r\n"\
+                  .format(apiKey, macAddress, hostname)
+        s.sendall(bytes(request, encoding='utf-8'))
+        string = str(s.recv(4096), 'utf-8')
+        s.close()
+
+        logging.info("Response received in str format: \n")
+        logging.info(string)
+        httpResponse, partition, json_data = string.partition('{"')
+        data = json.loads(partition + json_data)
+        with open('data.json', 'w') as outfile:
+            json.dump(data, outfile)
+        logging.debug("Exiting execute_API_Call method")
+        return data
+
 
 if __name__ == "__main__":
     # To avoid ssl certificates issue in mac machines.
@@ -14,38 +54,27 @@ if __name__ == "__main__":
     # setting up logger.
     logging.basicConfig(filename='RestTestApp.log', level=logging.INFO, filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
+    print("==========================================================================")
+    print("            RestTest: Find the details of your mac address")
+    print("==========================================================================\n")
     print("Please enter the macAddress: ")
     macAddress = input()
     # Validating the given mac address.
     if re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", macAddress.lower()):
-        logging.info("Validation passed.")
+        logging.info("MAC Address validation passed.")
         logging.info('Finding the details of the given macAddress ' + macAddress)
-        try:
-            logging.debug("Inside the try block")
-            httpClient = http.client.HTTPSConnection('api.macaddress.io')
-            logging.info("Opening an HTTPS connection with macaddress.io")
-            httpClient.request('GET', "/v1?apiKey={}&output=json&search={}".format(apiKey, macAddress))
-            response = httpClient.getresponse()
-            result_all = response.read().decode("utf-8")
-            result = json.loads(result_all)
-            logging.info("Response from the API:  \n" + str(result))
-            with open('data.txt', 'w') as outfile:
-                json.dump(result, outfile)
 
+        data = APITest().execute_API_Call()
+        if "vendorDetails" in data:
+            print("\n\n")
+            print("####################################################################")
+            print("Company Details: \n" + data['vendorDetails']['companyName'])
+            print(data['vendorDetails']['companyAddress'])
+            print("####################################################################")
+        else:
             print("\n\n\n")
-            print("####################################################################")
-            print("Company Details: \n" + result['vendorDetails']['companyName'])
-            print(result['vendorDetails']['companyAddress'])
-            print("####################################################################")
+            print("Sorry. Could not find vendor details of the given Mac Address.")
 
-        except Exception as e:
-            logging.info("Caught exception while fetching API response.\n" + str(e))
-            print(e)
-
-        finally:
-            if httpClient:
-                httpClient.close()
-                logging.info("Closing the HTTPS connection with macaddress.io")
     else:
         logging.info("Given mac address {} is invalid.".format(macAddress))
         print("\n\nGiven address {} is invalid. Please provide correct mac address.".format(macAddress))
