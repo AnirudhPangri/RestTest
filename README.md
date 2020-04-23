@@ -8,7 +8,7 @@ The API call is handled in a more rudimentary socket ssl programming way.
 Socket connection is established with the host over the https port 443, and response is parsed to extract the Json.
 The Hostname and API key required to access the details are stored in a separate config file, for security and easy management.
 
-A new file config.py file should be created in the same directory with the hostname="api.macaddress.io" and the apiKey="<API KEY>", before testing. 
+A new file config.py file should be created in the same directory with the hostname="api.macaddress.io" and the apiKey="API KEY", before testing.
 
 Input: Mac Address.
 
