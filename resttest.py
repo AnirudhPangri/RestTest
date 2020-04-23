@@ -11,11 +11,9 @@ port = 443  # default port for HTTPS connection.
 hostname = config.hostname
 
 
-class APITest:
-    def execute_API_Call(self):
-        logging.debug("Inside execute_API_Call method")
+class RestClient:
+    def execute_API_Call(self, macAddr):
         try:
-            logging.debug("Inside the first try block")
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s = ssl.wrap_socket(s)
             logging.info("Socket successfully created")
@@ -23,7 +21,6 @@ class APITest:
             logging.error("socket creation failed with error: " + str(err))
 
         try:
-            logging.debug("Inside the second try block")
             host_ip = socket.gethostbyname(hostname)
         except socket.gaierror:
             print("Error while resolving the host.")
@@ -33,18 +30,17 @@ class APITest:
         logging.info("The socket has successfully connected to macaddress.io on port 443")
 
         request = "GET /v1?apiKey={}&output=json&search={} HTTP/1.1\r\nHost: {}\r\n\r\n"\
-                  .format(apiKey, macAddress, hostname)
+                  .format(apiKey, macAddr, hostname)
         s.sendall(bytes(request, encoding='utf-8'))
         string = str(s.recv(4096), 'utf-8')
         s.close()
 
-        logging.info("Response received in str format: \n")
+        logging.info("Response received from the host: \n")
         logging.info(string)
         httpResponse, partition, json_data = string.partition('{"')
         data = json.loads(partition + json_data)
         with open('data.json', 'w') as outfile:
             json.dump(data, outfile)
-        logging.debug("Exiting execute_API_Call method")
         return data
 
 
@@ -62,9 +58,9 @@ if __name__ == "__main__":
     # Validating the given mac address.
     if re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", macAddress.lower()):
         logging.info("MAC Address validation passed.")
-        logging.info('Finding the details of the given macAddress ' + macAddress)
+        logging.info('Finding the details of the given macAddress: ' + macAddress)
 
-        data = APITest().execute_API_Call()
+        data = RestClient().execute_API_Call(macAddress)
         if "vendorDetails" in data:
             print("\n\n")
             print("####################################################################")
