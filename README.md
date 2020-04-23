@@ -19,8 +19,8 @@ Output: Company name and details.
 example:
 
 Company Details:
-<Company Name>
-<Address>
+##Company Name##
+##Address##
 
 
 Though only company details are shown as output, All the details returned by the API are stored as a json file for future use.
