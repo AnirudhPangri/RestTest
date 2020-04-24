@@ -1,4 +1,3 @@
 FROM python:3
-ADD config.py .
-ADD resttest.py .
-CMD [ "python", "./resttest.py" ]
+COPY . .
+CMD [ "python", "resttest.py" ]
