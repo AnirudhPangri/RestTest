@@ -1,43 +1,32 @@
 import ssl
 import json
-import socket
 import config
 import logging
 import re
-import sys
+from RestClient import rest_client
 
 apiKey = config.apiKey
 port = 443  # default port for HTTPS connection.
 hostname = config.hostname
 
 
-class RestClient:
-    def execute_API_Call(self, macAddr):
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s = ssl.wrap_socket(s)
-            logging.info("Socket successfully created")
-        except socket.error as err:
-            logging.error("socket creation failed with error: " + str(err))
-
-        try:
-            host_ip = socket.gethostbyname(hostname)
-        except socket.gaierror:
-            print("Error while resolving the host.")
-            sys.exit()
-
-        s.connect((host_ip, port))
-        logging.info("The socket has successfully connected to macaddress.io on port 443")
-
-        request = "GET /v1?apiKey={}&output=json&search={} HTTP/1.1\r\nHost: {}\r\n\r\n"\
-                  .format(apiKey, macAddr, hostname)
-        s.sendall(bytes(request, encoding='utf-8'))
-        string = str(s.recv(4096), 'utf-8')
-        s.close()
-
+class APICall:
+    def prepare_request(self, macAddr):
+        request_method = "GET"
+        request_path = "/v1".format(apiKey, macAddr)
+        query_params_dict = {"apiKey": apiKey,
+                             "output": "json",
+                             "search": macAddress}
+        headers = None
+        request_body = None
+        response = rest_client.execute_API_Call(self, request_method, port, request_path, hostname, query_params_dict,
+                                                headers, request_body)
         logging.info("Response received from the host: \n")
-        logging.info(string)
-        httpResponse, partition, json_data = string.partition('{"')
+        logging.info(response)
+        return response
+
+    def parse_API_response(self, response):
+        httpResponse, partition, json_data = response.partition('{"')
         data = json.loads(partition + json_data)
         with open('data.json', 'w') as outfile:
             json.dump(data, outfile)
@@ -60,7 +49,8 @@ if __name__ == "__main__":
         logging.info("MAC Address validation passed.")
         logging.info('Finding the details of the given macAddress: ' + macAddress)
 
-        data = RestClient().execute_API_Call(macAddress)
+        response = APICall().prepare_request(macAddress)
+        data = APICall().parse_API_response(response)
         if "vendorDetails" in data:
             print("\n\n")
             print("####################################################################")
