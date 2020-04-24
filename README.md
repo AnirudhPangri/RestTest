@@ -44,5 +44,6 @@ docker run -it <your_docker_image_name>
 
 ----------------
 Future enhancement:
-Encoding can be introduced for better security.
+Socket encryption for security.
+RestClient that can handle all HTTP methods with any headers/ query params or request body.
 Details displayed as output can be improved.
