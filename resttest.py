@@ -38,11 +38,14 @@ class APICall:
         :param response:                   String response collected from User.
         :return:                           Dict containing the Response Json from.
         """
-        httpResponse, partition, json_data = response.partition('{"')
-        data = json.loads(partition + json_data)
-        with open('data.json', 'w') as outfile:
-            json.dump(data, outfile)
-        return data
+        if "HTTP/1.1 200 OK" in response:
+            httpResponse, partition, json_data = response.partition('{"')
+            data = json.loads(partition + json_data)
+            with open('data.json', 'w') as outfile:
+                json.dump(data, outfile)
+            return data
+        else:
+            return response
 
 
 if __name__ == "__main__":
