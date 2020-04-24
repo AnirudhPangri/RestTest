@@ -12,6 +12,12 @@ hostname = config.hostname
 
 class APICall:
     def prepare_request(self, macAddr):
+        """
+        prepare_request: Prepares the API request.
+        :param self:                       self.
+        :param macAddr:                    MacAddress collected from User.
+        :return:                           String containing the Response from API.
+        """
         request_method = "GET"
         request_path = "/v1".format(apiKey, macAddr)
         query_params_dict = {"apiKey": apiKey,
@@ -26,6 +32,12 @@ class APICall:
         return response
 
     def parse_API_response(self, response):
+        """
+        parse_API_response: Parses the string response.
+        :param self:                       self.
+        :param response:                   String response collected from User.
+        :return:                           Dict containing the Response Json from.
+        """
         httpResponse, partition, json_data = response.partition('{"')
         data = json.loads(partition + json_data)
         with open('data.json', 'w') as outfile:
